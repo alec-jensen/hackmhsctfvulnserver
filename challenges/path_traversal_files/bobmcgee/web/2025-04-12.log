@@ -1,0 +1,49 @@
+[INFO] Server started at 2025-04-01 12:00:00
+[WARNING] Unauthorized access attempt detected at /admin
+[ERROR] Failed to load /etc/passwd
+[INFO] User 'bobmcgee' logged in at 2025-04-02 08:15:00
+[INFO] File accessed: /path_traversal_files/bobmcgee/web/files/notes.txt
+[INFO] File accessed: /path_traversal_files/bobmcgee/web/files/todo.txt
+[WARNING] Suspicious file access attempt: ../../../../etc/shadow
+[INFO] User 'alice' logged in at 2025-04-03 14:22:00
+[ERROR] File not found: /path_traversal_files/bobmcgee/web/files/flag.txt
+[INFO] Directory listing requested: /path_traversal_files/bobmcgee/web/files/
+[DEBUG] Temporary file created: /tmp/debug12345.tmp
+[WARNING] Unauthorized access attempt detected at /hidden/secret
+[INFO] File accessed: /path_traversal_files/bobmcgee/web/files/contacts.csv
+[ERROR] Permission denied: /path_traversal_files/bobmcgee/web/files/restricted.txt
+[INFO] User 'bobmcgee' logged out at 2025-04-04 18:45:00
+[INFO] Server restarted at 2025-04-05 09:00:00
+[WARNING] Potential path traversal attempt: ../../../var/log/syslog
+[INFO] File accessed: /path_traversal_files/bobmcgee/web/files/data.json
+[DEBUG] Debugging session started for user 'admin'
+[ERROR] Failed to load /root/.ssh/id_rsa
+[INFO] User 'charlie' logged in at 2025-04-06 11:30:00
+[WARNING] Unauthorized access attempt detected at /backup/old_files
+[INFO] File accessed: /path_traversal_files/bobmcgee/web/files/fake_flag.txt
+[ERROR] File not found: /path_traversal_files/bobmcgee/web/files/real_flag.txt
+[INFO] User 'charlie' logged out at 2025-04-06 12:00:00
+[DEBUG] Cache cleared for user 'bobmcgee'
+[INFO] Server shutdown initiated at 2025-04-07 23:59:59
+[INFO] User 'dave' logged in at 2025-04-08 10:00:00
+[INFO] File accessed: /path_traversal_files/bobmcgee/web/files/hidden_flag.txt
+[ERROR] File not found: /path_traversal_files/bobmcgee/web/files/secret_key.pem
+[WARNING] Unauthorized access attempt detected at /private/admin
+[DEBUG] Temporary file created: /tmp/fake_debug.tmp
+[INFO] File accessed: /path_traversal_files/bobmcgee/web/files/decoy.txt
+[ERROR] Permission denied: /path_traversal_files/bobmcgee/web/files/hidden/flag.txt
+[INFO] User 'eve' logged in at 2025-04-09 15:30:00
+[WARNING] Suspicious file access attempt: ../../../../var/log/auth.log
+[INFO] File accessed: /path_traversal_files/bobmcgee/web/files/fake_credentials.json
+[ERROR] Failed to load /etc/important_file
+[INFO] User 'eve' logged out at 2025-04-09 16:00:00
+[DEBUG] Cache cleared for user 'dave'
+[INFO] Server restarted at 2025-04-10 08:00:00
+[WARNING] Unauthorized access attempt detected at /backup/hidden_files
+[INFO] File accessed: /path_traversal_files/bobmcgee/web/files/decoy_flag.txt
+[ERROR] File not found: /path_traversal_files/bobmcgee/web/files/real_secret.txt
+[INFO] User 'admin' logged in at 2025-04-10 18:00:00
+[DEBUG] Debugging session started for user 'eve'
+[ERROR] Failed to load /root/.ssh/known_hosts
+[INFO] User 'admin' logged out at 2025-04-10 19:00:00
+[INFO] Server shutdown initiated at 2025-04-11 23:59:59

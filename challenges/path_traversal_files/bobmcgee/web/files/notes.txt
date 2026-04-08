@@ -1,0 +1,21 @@
+Meeting notes:
+- Debate whether the project timeline is a work of fiction.
+- Cry over code quality while pretending to review it.
+- Plan the next sprint (aka "the sprint of broken dreams").
+- Assign tasks by spinning the Wheel of Misfortune.
+- Evaluate progress (spoiler: we’re still doomed).
+- Identify blockers, starting with the office Wi-Fi.
+- Discuss resource allocation (and why we need more snacks).
+- Decode stakeholder feedback written in hieroglyphics.
+- Update documentation (or just add "TODO" everywhere).
+- Plan the demo and rehearse our "it’s not a bug, it’s a feature" speech.
+- Set deadlines that we’ll definitely miss.
+- Brainstorm features that sound cool but will never get built.
+- Review test coverage (and discover it’s mostly comments).
+- Argue over whose bug is the most "fun" to fix.
+- Plan team-building activities (like surviving another meeting).
+- Review the budget and realize we can’t afford coffee anymore.
+- Discuss deployment strategy (step 1: panic).
+- Evaluate workload and confirm everyone is running on caffeine fumes.
+- Plan knowledge-sharing sessions (aka "Google it together").
+- Review customer feedback and wonder if they’re trolling us.

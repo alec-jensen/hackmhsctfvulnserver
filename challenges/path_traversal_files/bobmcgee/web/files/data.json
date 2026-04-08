@@ -1,0 +1,146 @@
+{
+  "library_name": "Central City Library",
+  "location": "123 Library Lane, Central City",
+  "books": [
+    {
+      "title": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "year_published": 1960,
+      "location": { "row": "A", "section": "1", "id": "001" }
+    },
+    {
+      "title": "1984",
+      "author": "George Orwell",
+      "year_published": 1949,
+      "location": { "row": "B", "section": "3", "id": "002" }
+    },
+    {
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "year_published": 1925,
+      "location": { "row": "C", "section": "2", "id": "003" }
+    },
+    {
+      "title": "Moby Dick",
+      "author": "Herman Melville",
+      "year_published": 1851,
+      "location": { "row": "D", "section": "4", "id": "004" }
+    },
+    {
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "year_published": 1813,
+      "location": { "row": "E", "section": "1", "id": "005" }
+    },
+    {
+      "title": "The Catcher in the Rye",
+      "author": "J.D. Salinger",
+      "year_published": 1951,
+      "location": { "row": "F", "section": "3", "id": "006" }
+    },
+    {
+      "title": "The Hobbit",
+      "author": "J.R.R. Tolkien",
+      "year_published": 1937,
+      "location": { "row": "G", "section": "2", "id": "007" }
+    },
+    {
+      "title": "War and Peace",
+      "author": "Leo Tolstoy",
+      "year_published": 1869,
+      "location": { "row": "H", "section": "4", "id": "008" }
+    },
+    {
+      "title": "Crime and Punishment",
+      "author": "Fyodor Dostoevsky",
+      "year_published": 1866,
+      "location": { "row": "I", "section": "1", "id": "009" }
+    },
+    {
+      "title": "The Odyssey",
+      "author": "Homer",
+      "year_published": -800,
+      "location": { "row": "J", "section": "3", "id": "010" }
+    },
+    {
+      "title": "Brave New World",
+      "author": "Aldous Huxley",
+      "year_published": 1932,
+      "location": { "row": "K", "section": "2", "id": "011" }
+    },
+    {
+      "title": "The Divine Comedy",
+      "author": "Dante Alighieri",
+      "year_published": 1320,
+      "location": { "row": "L", "section": "4", "id": "012" }
+    },
+    {
+      "title": "The Brothers Karamazov",
+      "author": "Fyodor Dostoevsky",
+      "year_published": 1880,
+      "location": { "row": "M", "section": "1", "id": "013" }
+    }
+  ],
+  "members": [
+    {
+      "name": "John Doe",
+      "membership_id": "M12345",
+      "joined_date": "2022-01-15"
+    },
+    {
+      "name": "Jane Smith",
+      "membership_id": "M67890",
+      "joined_date": "2023-03-22"
+    },
+    {
+      "name": "Alice Johnson",
+      "membership_id": "M23456",
+      "joined_date": "2021-06-10"
+    },
+    {
+      "name": "Bob Williams",
+      "membership_id": "M34567",
+      "joined_date": "2020-11-05"
+    },
+    {
+      "name": "Charlie Brown",
+      "membership_id": "M45678",
+      "joined_date": "2019-08-20"
+    },
+    {
+      "name": "Diana Prince",
+      "membership_id": "M56789",
+      "joined_date": "2023-02-14"
+    },
+    {
+      "name": "Ethan Hunt",
+      "membership_id": "M67891",
+      "joined_date": "2022-12-01"
+    },
+    {
+      "name": "Fiona Gallagher",
+      "membership_id": "M78912",
+      "joined_date": "2021-09-30"
+    },
+    {
+      "name": "George Bailey",
+      "membership_id": "M89123",
+      "joined_date": "2020-04-18"
+    },
+    {
+      "name": "Hannah Montana",
+      "membership_id": "M91234",
+      "joined_date": "2019-07-22"
+    },
+    {
+      "name": "Ian Malcolm",
+      "membership_id": "M12346",
+      "joined_date": "2023-05-15"
+    },
+    {
+      "name": "Julia Roberts",
+      "membership_id": "M23457",
+      "joined_date": "2022-03-10"
+    }
+  ]
+}
