@@ -1,47 +1,95 @@
-from fastapi import APIRouter, Request, HTTPException
+"""Broken Authentication Challenge - demonstrates insecure query-param auth flow."""
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
+
+import config
+from schemas import UserInfo
+from ui.banner import render_ctf_banner
 
 router = APIRouter()
 
-FLAG = "flag{th1s_4uth3nt1c4t10n_5ux}"
+FLAG = config.BROKEN_AUTH_FLAG
 PATH = "/login/"
-
-# theres 2 ways to get the flag
-# 1. get admin password from the javascript or web requests, login, and get the flag
-# 2. see the /admin endpoint, and see that the flag is in the response
 
 # Simulated database of users with passwords
 users = {
-    "admin": {
-        "password": "supersecretadminpass",
-        "flag": FLAG
-    },
-    "user1": {
-        "password": "password123",
-        "flag": None
-    },
-    "guest": {
-        "password": "guest",
-        "flag": None
-    }
+    "admin": UserInfo(password="5up3rs3cret4dm1npa55"),
+    "user1": UserInfo(password="Password123!"),
+    "guest": UserInfo(password="guest67"),
+    "alec": UserInfo(password="alecspassword_9"),
 }
+
 
 @router.get("/users")
 async def get_users():
-    return users
+    """Endpoint that leaks user credentials (intentional vulnerability)."""
+    return {
+        username: {"password": data.password}
+        for username, data in users.items()
+    }
 
-@router.get("/admin")
-async def admin_page(username: str):
-    if username in users and users[username].get("flag"):
-        return {"flag": users[username]["flag"]}
-    raise HTTPException(status_code=403, detail="Forbidden")
+
+@router.get("/admin", response_class=HTMLResponse)
+async def admin_page(username: str = Query(""), password: str = Query("")):
+    """Validation page that checks query params and displays the flag if valid."""
+    banner_html = render_ctf_banner()
+    if not username or not password or username not in users or users[username].password != password:
+        return f"""
+        <html>
+        <head>
+            <title>Login Validation</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                .container {{ max-width: 800px; margin: 0 auto; }}
+                .panel {{ border: 1px solid #ccc; padding: 20px; border-radius: 5px; }}
+                .success {{ color: green; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                {banner_html}
+                <h1>Credentials Invalid</h1>
+                <p><a href="{PATH}">Back to login</a></p>
+            </div>
+        </body>
+        </html>
+        """
+
+    if username in users and users[username].password == password:
+        return f"""
+        <html>
+        <head>
+            <title>Login Validation</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                .container {{ max-width: 800px; margin: 0 auto; }}
+                .panel {{ border: 1px solid #ccc; padding: 20px; border-radius: 5px; }}
+                .success {{ color: green; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                {banner_html}
+                <h1>Credentials Verified</h1>
+                <div class="panel">
+                    <p><strong>User:</strong> {username}</p>
+                    <p class="success"><strong>Flag:</strong> {FLAG}</p>
+                </div>
+                <p><a href="{PATH}">Back to login</a></p>
+            </div>
+        </body>
+        </html>
+        """
+
+    raise HTTPException(status_code=403, detail="Invalid username or password")
 
 @router.get("/", response_class=HTMLResponse)
 async def broken_auth_ui():
+    banner_html = render_ctf_banner()
     html_content = f"""
     <html>
     <head>
-        <title>Broken Authentication Challenge</title>
+        <title>Login</title>
         <style>
             body {{ font-family: Arial, sans-serif; margin: 20px; }}
             .container {{ max-width: 800px; margin: 0 auto; }}
@@ -55,7 +103,8 @@ async def broken_auth_ui():
     </head>
     <body>
         <div class="container">
-            <h1>Broken Authentication Challenge</h1>
+            {banner_html}
+            <h1>Account Login</h1>
             
             <div class="panel">
                 <h2>Login</h2>
@@ -66,16 +115,11 @@ async def broken_auth_ui():
                 </div>
                 <div id="login-message"></div>
             </div>
-            
+
             <div class="panel">
-                <h2>Access Admin Area</h2>
-                <div>
-                    <button onclick="accessAdmin()" class="btn" id="admin-btn" disabled>Access Admin</button>
-                </div>
-                <div id="admin-message"></div>
+                <h2>Need Help?</h2>
+                <p>If your login appears to fail, refresh and try again.</p>
             </div>
-            
-            <div id="result"></div>
         </div>
         
         <script>
@@ -103,43 +147,16 @@ async def broken_auth_ui():
                     return;
                 }}
                 
-                // Client-side authentication - extremely insecure!
+                // Check password
                 if (userData[username] && userData[username].password === password) {{
                     currentUser = username;
                     document.getElementById('login-message').innerHTML = 
-                        `<p class="success">Login successful! Welcome, ${{username}}!</p>`;
-                    document.getElementById('admin-btn').disabled = false;
+                        `<p class="success">Login successful! Redirecting to validation page...</p>`;
+
+                    window.location.href = `{PATH}admin?username=${{encodeURIComponent(username)}}&password=${{encodeURIComponent(password)}}`;
                 }} else {{
                     document.getElementById('login-message').innerHTML = 
                         `<p class="error">Invalid username or password</p>`;
-                    document.getElementById('admin-btn').disabled = true;
-                }}
-            }}
-            
-            async function accessAdmin() {{
-                if (!currentUser) {{
-                    document.getElementById('admin-message').innerHTML = 
-                        `<p class="error">You need to login first</p>`;
-                    return;
-                }}
-                
-                try {{
-                    const response = await fetch(`{PATH}admin?username=${{encodeURIComponent(currentUser)}}`);
-                    const data = await response.json();
-                    
-                    if (response.ok) {{
-                        const resultDiv = document.getElementById('result');
-                        resultDiv.style.display = 'block';
-                        resultDiv.innerHTML = `<h3>Success!</h3><p>Flag: ${{data.flag}}</p>`;
-                        document.getElementById('admin-message').innerHTML = 
-                            '<p class="success">Access granted!</p>';
-                    }} else {{
-                        document.getElementById('admin-message').innerHTML = 
-                            `<p class="error">Error: ${{data.detail}}</p>`;
-                    }}
-                }} catch (error) {{
-                    document.getElementById('admin-message').innerHTML = 
-                        `<p class="error">Error: ${{error.message}}</p>`;
                 }}
             }}
         </script>
