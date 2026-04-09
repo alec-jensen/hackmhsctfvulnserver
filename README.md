@@ -1,6 +1,6 @@
 # HackMHS CTF Vulnerability Server
 
-A intentionally vulnerable web server designed to teach web security concepts through CTF (Capture The Flag) challenges.
+A web server designed with simulated vulnerabilities to teach web security concepts through CTF (Capture The Flag) challenges.
 
 ## Features
 
@@ -8,6 +8,8 @@ A intentionally vulnerable web server designed to teach web security concepts th
 - **SQL Injection**: Direct SQL injection vulnerability
 - **Cross-Site Scripting (XSS)**: Stored XSS in chatroom
 - **Path Traversal**: Directory traversal attacks
+- **ID Guessing (IDOR Lite)**: Accessing other user records by changing IDs
+- **Cookie Role Toggle**: Client-side cookie role tampering
 
 ## Quick Start
 
@@ -52,6 +54,8 @@ Configurable options:
 - `SQL_INJECTION_FLAG`: Flag for SQL injection challenge
 - `XSS_FLAG`: Flag for XSS challenge
 - `PATH_TRAVERSAL_FLAG`: Flag for path traversal challenge
+- `ID_GUESSING_FLAG`: Flag for ID guessing (IDOR lite) challenge
+- `COOKIE_ROLE_FLAG`: Flag for cookie role toggle challenge
 - `HOST`: Server host (default: `0.0.0.0`)
 - `PORT`: Server port (default: `8080`)
 - `DEBUG`: Enable debug logging (default: `false`)
@@ -68,6 +72,8 @@ Configurable options:
 
 ### 1. Broken Authentication (`/login/`)
 
+**Difficulty**: Easy
+
 **Description**: Learn about client-side authentication vulnerabilities.
 
 **Tasks**:
@@ -77,7 +83,14 @@ Configurable options:
 
 **Vulnerability**: Passwords are stored and transmitted in plaintext via a public endpoint.
 
+**Solution**:
+1. Open `/login/users` and copy one valid username/password pair.
+2. Visit `/login/` and submit those credentials in the form.
+3. The page redirects to `/login/admin?username=...&password=...` and returns the flag.
+
 ### 2. SQL Injection (`/profile-search/`)
+
+**Difficulty**: Hard
 
 **Description**: Learn how to exploit SQL vulnerabilities.
 
@@ -88,7 +101,18 @@ Configurable options:
 
 **Vulnerability**: User input is directly concatenated into SQL queries without parameterization.
 
+**Solution**:
+1. Open `/profile-search/`.
+2. In the search box, inject a UNION payload that matches the 3-column query shape.
+3. Example payload:
+	```
+	' UNION SELECT id, flag, NULL FROM flags --
+	```
+4. Submit search and read the returned row containing the flag.
+
 ### 3. XSS Challenge (`/chatroom/`)
+
+**Difficulty**: Medium
 
 **Description**: Learn about cross-site scripting attacks.
 
@@ -99,7 +123,18 @@ Configurable options:
 
 **Detection**: The server has regex-based XSS detection that can be bypassed using obfuscation techniques.
 
+**Solution**:
+1. Open `/chatroom/`.
+2. Send a message that matches the XSS detector patterns.
+3. A standard payload works:
+	```
+	<script>alert('xss')</script>
+	```
+4. When detected, your session is marked solved and the page shows the verification token/flag.
+
 ### 4. Path Traversal (`/file-access/`)
+
+**Difficulty**: Medium
 
 **Description**: Learn about directory traversal vulnerabilities.
 
@@ -109,6 +144,51 @@ Configurable options:
 3. Access files from the user's home directory
 
 **Security**: The server has basic path validation, so traversal is partially mitigated.
+
+**Solution**:
+1. Open `/file-access/` and inspect starter files under `web/files`.
+2. Traverse upward with inputs like `../` and enumerate directories.
+3. Use breadcrumbs in notes/todo/log data to pivot toward hidden dotfiles in the home area.
+4. Retrieve the file that contains `{{FLAG}}`; when served, the backend replaces it with the real `PATH_TRAVERSAL_FLAG` value.
+5. Read the resolved file content to obtain the flag.
+
+### 5. ID Guessing (IDOR Lite) (`/my-profile/`)
+
+**Difficulty**: Easy
+
+**Description**: Learn how direct object references can expose other users' data.
+
+**Tasks**:
+1. Open the student profile viewer
+2. Change the `id` query parameter to view other profiles
+3. Find the staff profile note that contains the flag
+
+**Vulnerability**: The endpoint trusts user-supplied record IDs without ownership checks.
+
+**Solution**:
+1. Open `/my-profile/` (it redirects to a default user record).
+2. Modify the `user` query parameter in the URL and iterate values (`?user=1`, `?user=2`, etc.).
+3. Locate the staff/organizer profile entry.
+4. Read the note field on that record to get the flag.
+
+### 6. Cookie Role Toggle (`/dashboard/`)
+
+**Difficulty**: Easy
+
+**Description**: Learn why role decisions must not trust plain client-side cookies.
+
+**Tasks**:
+1. Open the role dashboard
+2. Inspect and edit the `ctf_role` cookie from `user` to `admin`
+3. Refresh to reveal the admin token
+
+**Vulnerability**: Authorization is based entirely on an unsigned, client-controlled cookie value.
+
+**Solution**:
+1. Open `/dashboard/` and inspect cookies in browser dev tools.
+2. Find `ctf_role` and change its value from `user` to `admin`.
+3. Refresh `/dashboard/`.
+4. The admin-only notice appears and reveals the token/flag.
 
 ## Project Structure
 
@@ -125,6 +205,8 @@ Configurable options:
 │   ├── sql_roulette.py       # SQL injection challenge
 │   ├── xss_practice.py       # XSS challenge
 │   ├── path_traversal.py     # Path traversal challenge
+│   ├── id_guessing.py        # ID guessing (IDOR lite) challenge
+│   ├── cookie_role_toggle.py # Cookie role tampering challenge
 │   └── path_traversal_files/ # Files accessible via traversal
 └── README.md                 # This file
 ```
@@ -132,7 +214,7 @@ Configurable options:
 ## API Endpoints
 
 ### Root
-- `GET /` - Server info and challenge list
+- `GET /` - Minimal service status response
 - `GET /health` - Health check endpoint
 
 ### Broken Auth
@@ -150,6 +232,13 @@ Configurable options:
 ### Path Traversal
 - `GET /file-access/` - File access UI
 - `GET /file-access/file?filename=<path>` - Access files
+
+### ID Guessing (IDOR Lite)
+- `GET /my-profile?user=<number>` - My profile page by direct user parameter
+
+### Cookie Role Toggle
+- `GET /dashboard/` - Account dashboard route (cookie role challenge)
+- `GET /dashboard/reset` - Reset role cookie back to default
 
 ### Admin Panel
 - `GET /admin-panel/login` - Admin login page

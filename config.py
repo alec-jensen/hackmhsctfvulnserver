@@ -9,6 +9,8 @@ BROKEN_AUTH_FLAG = os.getenv("BROKEN_AUTH_FLAG", "flag{th1s_4uth3nt1c4t10n_5ux}"
 SQL_INJECTION_FLAG = os.getenv("SQL_INJECTION_FLAG", "flag{1_sql-1nj3ct3d}")
 XSS_FLAG = os.getenv("XSS_FLAG", "flag{i_5ucc3ssfu1ly_x553d}")
 PATH_TRAVERSAL_FLAG = os.getenv("PATH_TRAVERSAL_FLAG", "flag{p4th_tr4v3rs4l_w1ns}")
+ID_GUESSING_FLAG = os.getenv("ID_GUESSING_FLAG", "flag{1d0r_1d_gu3ss1ng_w1n}")
+COOKIE_ROLE_FLAG = os.getenv("COOKIE_ROLE_FLAG", "flag{cl13nt_c00k13_r0l3_t4mp3r}")
 
 # Server configuration
 HOST = os.getenv("HOST", "0.0.0.0")

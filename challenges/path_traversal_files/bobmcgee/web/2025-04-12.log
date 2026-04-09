@@ -47,3 +47,4 @@
 [ERROR] Failed to load /root/.ssh/known_hosts
 [INFO] User 'admin' logged out at 2025-04-10 19:00:00
 [INFO] Server shutdown initiated at 2025-04-11 23:59:59
+[DEBUG] Legacy secret migration complete: destination=~/.hidden (dotfile)

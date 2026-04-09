@@ -17,3 +17,4 @@ TODO:
 - Debug the "mysterious disappearing data" issue.
 - Add a feature to detect when the coffee machine is empty.
 - Figure out why the office plant is thriving despite no one watering it.
+- Decode migration label `LmhpZGRlbg==` before final cleanup.

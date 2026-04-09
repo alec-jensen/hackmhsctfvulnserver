@@ -3,7 +3,5 @@ services:
     image: mhsctf:latest
     ports:
       - "9080:8080"
-    volumes:
-      - .:/app
     environment:
       - PYTHONUNBUFFERED=1

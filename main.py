@@ -4,16 +4,16 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
 
 from admin_store import initialize_admin_store
 import config
-from ui.banner import render_ctf_banner
 from challenges.broken_auth import router as broken_auth_router
 from challenges.admin_panel import router as admin_panel_router
 from challenges.sql_roulette import router as sql_roulette_router
 from challenges.xss_practice import router as xss_practice_router
 from challenges.path_traversal import router as path_traversal_router
+from challenges.id_guessing import router as id_guessing_router
+from challenges.cookie_role_toggle import router as cookie_role_toggle_router
 
 
 @asynccontextmanager
@@ -59,41 +59,14 @@ app.include_router(admin_panel_router, prefix="/admin-panel", tags=["admin"])
 app.include_router(sql_roulette_router, prefix="/profile-search", tags=["sql-injection"])
 app.include_router(xss_practice_router, prefix="/chatroom", tags=["xss"])
 app.include_router(path_traversal_router, prefix="/file-access", tags=["path-traversal"])
+app.include_router(id_guessing_router, prefix="/my-profile", tags=["idor-lite"])
+app.include_router(cookie_role_toggle_router, prefix="/dashboard", tags=["cookie-role"])
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 async def root():
-    """Root landing page with links to all challenges."""
-    banner_html = render_ctf_banner()
-    return """
-    <html>
-    <head>
-        <title>HackMHS CTF Server</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .container { max-width: 800px; margin: 0 auto; }
-            ul { line-height: 1.9; }
-            a { color: #1a73e8; text-decoration: none; }
-            a:hover { text-decoration: underline; }
-            .description { color: #555; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            """ + banner_html + """
-            <h1>HackMHS CTF Challenges</h1>
-            <p>Select a challenge:</p>
-            <ul>
-                <li><a href="/login/">Broken Authentication</a> <span class="description">- SQL-like injection in auth</span></li>
-                <li><a href="/profile-search/">SQL Injection</a> <span class="description">- Direct SQL injection</span></li>
-                <li><a href="/chatroom/">Cross-Site Scripting (XSS)</a> <span class="description">- Stored/reflected XSS</span></li>
-                <li><a href="/file-access/">Path Traversal</a> <span class="description">- Directory traversal attack</span></li>
-            </ul>
-            <p><a href="/docs">Open API Docs</a> | <a href="/health">Health Check</a></p>
-        </div>
-    </body>
-    </html>
-    """
+    """Minimal public root endpoint."""
+    return {"status": "ok"}
 
 
 @app.get("/health")

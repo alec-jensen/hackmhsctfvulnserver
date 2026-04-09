@@ -1,5 +1,6 @@
 """SQL Injection Challenge - demonstrates SQL injection vulnerabilities safely."""
 from html import escape
+import time
 from uuid import uuid4
 
 import aiosqlite
@@ -17,9 +18,12 @@ PATH = "/profile-search/"
 PLAYER_COOKIE = "sql_roulette_player_id"
 MAX_QUERY_LENGTH = 500
 MAX_SEARCH_LENGTH = 120
+MAX_ACTIVE_PLAYER_DBS = 100
+PLAYER_DB_TTL_SECONDS = 20 * 60
 
 # One isolated in-memory DB per player cookie.
 _player_dbs: dict[str, aiosqlite.Connection] = {}
+_player_db_last_access: dict[str, float] = {}
 
 
 def admin_get_player_count() -> int:
@@ -31,12 +35,45 @@ async def admin_reset_all_player_dbs() -> None:
     """Reset all SQL challenge state across players."""
     dbs = list(_player_dbs.values())
     _player_dbs.clear()
+    _player_db_last_access.clear()
     for conn in dbs:
         try:
             await conn.close()
         except Exception:
             # Best-effort cleanup for admin reset operations.
             pass
+
+
+async def _remove_player_db(player_id: str) -> None:
+    conn = _player_dbs.pop(player_id, None)
+    _player_db_last_access.pop(player_id, None)
+    if conn is not None:
+        try:
+            await conn.close()
+        except Exception:
+            # Best-effort cleanup for eviction and resets.
+            pass
+
+
+async def _prune_expired_player_dbs(now: float) -> None:
+    expired_ids = [
+        player_id
+        for player_id, last_access in _player_db_last_access.items()
+        if now - last_access > PLAYER_DB_TTL_SECONDS
+    ]
+    for player_id in expired_ids:
+        await _remove_player_db(player_id)
+
+
+async def _ensure_player_db_capacity() -> None:
+    if len(_player_dbs) < MAX_ACTIVE_PLAYER_DBS:
+        return
+
+    # Evict least-recently-used DBs until there is room for a new one.
+    overflow = len(_player_dbs) - MAX_ACTIVE_PLAYER_DBS + 1
+    lru_players = sorted(_player_db_last_access.items(), key=lambda item: item[1])
+    for player_id, _ in lru_players[:overflow]:
+        await _remove_player_db(player_id)
 
 
 async def initialize_db() -> aiosqlite.Connection:
@@ -96,17 +133,22 @@ async def initialize_db() -> aiosqlite.Connection:
 
 async def get_player_db(player_id: str) -> aiosqlite.Connection:
     """Get or create an isolated DB for a player."""
+    now = time.time()
+    await _prune_expired_player_dbs(now)
+
     if player_id not in _player_dbs:
+        await _ensure_player_db_capacity()
         _player_dbs[player_id] = await initialize_db()
+
+    _player_db_last_access[player_id] = now
     return _player_dbs[player_id]
 
 
 async def reset_player_db(player_id: str) -> None:
     """Reset a player's isolated database to challenge defaults."""
-    existing = _player_dbs.pop(player_id, None)
-    if existing is not None:
-        await existing.close()
+    await _remove_player_db(player_id)
     _player_dbs[player_id] = await initialize_db()
+    _player_db_last_access[player_id] = time.time()
 
 
 def get_or_create_player_id(request: Request, response: Response) -> str:
@@ -229,6 +271,7 @@ async def sql_roulette_ui(
     conn = await get_player_db(player_id)
 
     results = []
+    results_count = 0
     error_message = ""
     error_type = ""
     search_term = search or ""
@@ -245,11 +288,13 @@ async def sql_roulette_ui(
                 validate_query_shape(query, select_only=True)
 
                 async with conn.execute(query) as cursor:
-                    results = await cursor.fetchall()
+                    results = list(await cursor.fetchall())
+                    results_count = len(results)
                     column_names = [description[0] for description in cursor.description] if cursor.description else []
             else:
                 async with conn.execute("SELECT * FROM profiles") as cursor:
-                    results = await cursor.fetchall()
+                    results = list(await cursor.fetchall())
+                    results_count = len(results)
                     column_names = [description[0] for description in cursor.description]
         except HTTPException as http_err:
             error_message = str(http_err.detail)
@@ -289,7 +334,7 @@ async def sql_roulette_ui(
                 <a class="secondary-btn" href="{PATH}reset">Reset Session</a>
             </form>
 
-            {f"<div class='meta'><p><strong>Executed Query:</strong></p><pre>{safe_query}</pre><p><strong>Rows Returned:</strong> {len(results)}</p><p><strong>Error Type:</strong> {safe_error_type if safe_error_type else 'None'}</p></div>" if advanced else ""}
+            {f"<div class='meta'><p><strong>Executed Query:</strong></p><pre>{safe_query}</pre><p><strong>Rows Returned:</strong> {results_count}</p><p><strong>Error Type:</strong> {safe_error_type if safe_error_type else 'None'}</p></div>" if advanced else ""}
 
             <h2>Results</h2>
             {format_results_as_html(results, column_names, search_term, error_message)}

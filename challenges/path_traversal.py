@@ -1,10 +1,11 @@
 """Path Traversal Challenge - demonstrates directory traversal vulnerabilities."""
 import os
 import logging
+import mimetypes
 from urllib.parse import quote
 
 from fastapi import APIRouter, Query, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, Response
 
 import config
 from ui.banner import render_ctf_banner
@@ -18,6 +19,20 @@ logger = logging.getLogger(__name__)
 BASE_DIR = config.PATH_TRAVERSAL_BASE
 WEB_ROOT = os.path.join(BASE_DIR, "web", "files")
 PATH = "/file-access/"
+FLAG_PLACEHOLDER = b"{{FLAG}}"
+
+
+def _render_file_with_flag_placeholder(file_path: str) -> Response | None:
+    """Render text-like content with runtime flag placeholder replacement when needed."""
+    with open(file_path, "rb") as file_handle:
+        raw_content = file_handle.read()
+
+    if FLAG_PLACEHOLDER not in raw_content:
+        return None
+
+    replaced = raw_content.replace(FLAG_PLACEHOLDER, config.PATH_TRAVERSAL_FLAG.encode("utf-8"))
+    media_type = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
+    return Response(content=replaced, media_type=media_type)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -136,8 +151,11 @@ async def access_file(filename: str = Query(...)):
             )
             return HTMLResponse(content=f"<div><strong>Directory contents:</strong><br>{links}</div>")
         
-        # Serve file
+        # Serve file (with optional placeholder substitution).
         if os.path.isfile(requested_path):
+            templated_response = _render_file_with_flag_placeholder(requested_path)
+            if templated_response is not None:
+                return templated_response
             return FileResponse(requested_path)
         
         raise HTTPException(status_code=404, detail="File not found")

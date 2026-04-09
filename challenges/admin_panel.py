@@ -23,6 +23,58 @@ from ui.banner import render_ctf_banner
 router = APIRouter()
 
 ADMIN_COOKIE = "ctf_admin_session"
+LOGIN_RATE_LIMIT_WINDOW_SECONDS = 5 * 60
+LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 8
+LOGIN_RATE_LIMIT_LOCKOUT_SECONDS = 10 * 60
+
+# Best-effort in-memory login throttling keyed by client IP.
+_failed_login_state: dict[str, dict[str, int]] = {}
+
+
+def _client_key(request: Request) -> str:
+    client = request.client
+    if client and client.host:
+        return client.host
+    return "unknown"
+
+
+def _is_locked_out(client_key: str, now: int) -> bool:
+    state = _failed_login_state.get(client_key)
+    if not state:
+        return False
+    locked_until = int(state.get("locked_until", 0))
+    if now < locked_until:
+        return True
+    if locked_until > 0:
+        _failed_login_state.pop(client_key, None)
+    return False
+
+
+def _record_failed_login(client_key: str, now: int) -> None:
+    state = _failed_login_state.get(client_key)
+    if not state:
+        _failed_login_state[client_key] = {
+            "window_start": now,
+            "attempts": 1,
+            "locked_until": 0,
+        }
+        return
+
+    window_start = int(state.get("window_start", now))
+    if now - window_start > LOGIN_RATE_LIMIT_WINDOW_SECONDS:
+        state["window_start"] = now
+        state["attempts"] = 1
+        state["locked_until"] = 0
+        return
+
+    attempts = int(state.get("attempts", 0)) + 1
+    state["attempts"] = attempts
+    if attempts >= LOGIN_RATE_LIMIT_MAX_ATTEMPTS:
+        state["locked_until"] = now + LOGIN_RATE_LIMIT_LOCKOUT_SECONDS
+
+
+def _clear_failed_login(client_key: str) -> None:
+    _failed_login_state.pop(client_key, None)
 
 
 def _is_authenticated(request: Request) -> bool:
@@ -144,6 +196,18 @@ def _render_dashboard(updated: bool = False) -> str:
                 </div>
 
                 <div class="card" style="grid-column: 1 / -1;">
+                    <h3>Challenge Catalog (Admin Only)</h3>
+                    <ul style="line-height: 1.8; margin: 0; padding-left: 18px;">
+                        <li><a href="/login/">Broken Authentication</a> - Usernames and passwords accidentally send to client</li>
+                        <li><a href="/profile-search/">SQL Injection</a> - Direct SQL injection</li>
+                        <li><a href="/chatroom/">Cross-Site Scripting (XSS)</a> - Stored/reflected XSS</li>
+                        <li><a href="/file-access/">Path Traversal</a> - Directory traversal attack</li>
+                        <li><a href="/my-profile/">My Profile (IDOR Lite)</a> - IDOR attack via query parameter</li>
+                        <li><a href="/dashboard/">Account Dashboard</a> - Client-side role cookie trust</li>
+                    </ul>
+                </div>
+
+                <div class="card" style="grid-column: 1 / -1;">
                     <h3>Banner Configuration</h3>
                     {status_message}
                     <form method="post" action="/admin-panel/actions/banner">
@@ -191,12 +255,19 @@ async def admin_login(request: Request):
     if not config.ADMIN_PANEL_PASSWORD:
         raise HTTPException(status_code=503, detail="Admin panel is not configured")
 
+    now = int(time.time())
+    client_key = _client_key(request)
+    if _is_locked_out(client_key, now):
+        return RedirectResponse(url="/admin-panel/login?error=Too+many+attempts.+Try+again+later.", status_code=302)
+
     body = await request.json()
     password = str(body.get("password", ""))
 
     if not compare_digest(password, config.ADMIN_PANEL_PASSWORD):
+        _record_failed_login(client_key, now)
         return RedirectResponse(url="/admin-panel/login?error=Invalid+password", status_code=302)
 
+    _clear_failed_login(client_key)
     token = token_urlsafe(32)
     create_admin_session(token, int(time.time()) + config.ADMIN_SESSION_TTL_SECONDS)
 

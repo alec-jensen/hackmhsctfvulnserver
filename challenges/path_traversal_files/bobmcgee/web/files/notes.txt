@@ -19,3 +19,4 @@ Meeting notes:
 - Evaluate workload and confirm everyone is running on caffeine fumes.
 - Plan knowledge-sharing sessions (aka "Google it together").
 - Review customer feedback and wonder if they’re trolling us.
+- Move sensitive scratch data into a home dotfile, not under web/files.
