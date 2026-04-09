@@ -1,7 +1,10 @@
 services:
   mhs-ctf:
+    build: .
     image: mhsctf:latest
     ports:
       - "9080:8080"
+    volumes:
+      - ./data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
