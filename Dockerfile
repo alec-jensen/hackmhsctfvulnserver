@@ -7,7 +7,8 @@ WORKDIR /app
 # Copy and install dependencies first for better build caching.
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r /app/requirements.txt
+    pip install --no-cache-dir -r /app/requirements.txt && \
+    pip install --no-cache-dir python-dotenv python-multipart
 
 # Copy only runtime application files.
 COPY admin_store.py /app/admin_store.py
