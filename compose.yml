@@ -4,7 +4,25 @@ services:
     image: mhsctf:latest
     ports:
       - "9080:8080"
+    environment:
+      BROKEN_AUTH_FLAG: "flag{th1s_4uth3nt1c4t10n_5ux}"
+      SQL_INJECTION_FLAG: "flag{1_sql-1nj3ct3d}"
+      XSS_FLAG: "flag{i_5ucc3ssfu1ly_x553d}"
+      PATH_TRAVERSAL_FLAG: "flag{p4th_tr4v3rs4l_w1ns}"
+      ID_GUESSING_FLAG: "flag{1d0r_1d_gu3ss1ng_w1n}"
+      COOKIE_ROLE_FLAG: "flag{cl13nt_c00k13_r0l3_t4mp3r}"
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      DEBUG: "false"
+      ADMIN_DB_PATH: "data/admin_panel.db"
+      ENABLE_CORS: "true"
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:8080"
+      XSS_DETECTION_ENABLED: "true"
+      ENABLE_CTF_INFO_BANNER: "true"
+      CTF_INFO_BANNER_TEXT: "Welcome to the webserver challenges! These challenges often require looking at the browser's developer tools, like the inspect and network tabs. Good luck!"
+      ADMIN_PANEL_PASSWORD: "change-this-admin-password"
+      ADMIN_SESSION_TTL_SECONDS: "3600"
+      ADMIN_SECURE_COOKIE: "false"
+      PYTHONUNBUFFERED: "1"
     volumes:
       - ./data:/app/data
-    environment:
-      - PYTHONUNBUFFERED=1
