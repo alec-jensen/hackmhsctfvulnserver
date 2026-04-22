@@ -17,7 +17,14 @@ def _connect() -> sqlite3.Connection:
     db_dir = os.path.dirname(db_path)
     if db_dir:
         os.makedirs(db_dir, exist_ok=True)
-    conn = sqlite3.connect(db_path)
+
+    # Some deployments mount /app/data with permissions that block the runtime user.
+    # Keep the service available by falling back to a writable tmp location.
+    try:
+        conn = sqlite3.connect(db_path)
+    except (OSError, sqlite3.OperationalError):
+        fallback_path = os.path.join("/tmp", "admin_panel.db")
+        conn = sqlite3.connect(fallback_path)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
     return conn
