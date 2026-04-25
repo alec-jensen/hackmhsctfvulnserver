@@ -156,20 +156,20 @@ Configurable options:
 
 **Difficulty**: Easy
 
-**Description**: Learn how direct object references can expose other users' data.
+**Description**: Infiltrate a cybercriminal member portal where direct object references expose other gang dossiers.
 
 **Tasks**:
-1. Open the student profile viewer
-2. Change the `id` query parameter to view other profiles
-3. Find the staff profile note that contains the flag
+1. Open the BlackCipher member portal
+2. Change the `user` query parameter to view other member dossiers
+3. Find the gang leader's member ID and read the intel field containing the flag
 
 **Vulnerability**: The endpoint trusts user-supplied record IDs without ownership checks.
 
 **Solution**:
 1. Open `/my-profile/` (it redirects to a default user record).
 2. Modify the `user` query parameter in the URL and iterate values (`?user=1`, `?user=2`, etc.).
-3. Locate the staff/organizer profile entry.
-4. Read the note field on that record to get the flag.
+3. Locate the dossier where the crew is labeled as gang leader.
+4. Read the intel field on that record to get the flag.
 
 ### 6. Cookie Role Toggle (`/dashboard/`)
 

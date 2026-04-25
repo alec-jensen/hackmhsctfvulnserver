@@ -1,4 +1,4 @@
-"""ID guessing challenge (IDOR lite) for beginner participants."""
+"""ID guessing challenge themed as a cybercriminal member portal."""
 from html import escape
 
 from fastapi import APIRouter, Query
@@ -14,17 +14,37 @@ PATH = "/my-profile"
 
 
 PROFILES = {
-    1: {"name": "Ava", "club": "Robotics", "note": "Practice starts at 4:00 PM."},
-    2: {"name": "Noah", "club": "Yearbook", "note": "Bring your camera tomorrow."},
-    3: {"name": "Mia", "club": "Debate", "note": "Topic sheet posted in room 202."},
-    4: {"name": "Liam", "club": "Math Team", "note": "Meet before school on Friday."},
-    5: {"name": "CTF-Organizer", "club": "Staff", "note": f"Admin memo: {FLAG}"},
+    1: {
+        "handle": "ZeroDayJack",
+        "crew": "Access Brokers",
+        "intel": "Supply-chain recon complete. Awaiting buyer bids.",
+    },
+    2: {
+        "handle": "PacketViper",
+        "crew": "Credential Crew",
+        "intel": "Fresh combo list uploaded to dead drop node #3.",
+    },
+    3: {
+        "handle": "GhostCipher",
+        "crew": "Ransom Ops",
+        "intel": "Affiliate onboarding moved to encrypted forum thread.",
+    },
+    4: {
+        "handle": "RootMonger",
+        "crew": "Initial Access",
+        "intel": "Phishing kit updated with region-specific lures.",
+    },
+    5: {
+        "handle": "NightKing",
+        "crew": "Gang Leader",
+        "intel": f"Leader priority memo: {FLAG}",
+    },
 }
 
 
 @router.get("/", response_class=HTMLResponse)
 async def id_guessing_ui(user: int | None = Query(default=None, ge=1, le=20)):
-    """Render a my-profile page that trusts a user query parameter."""
+    """Render a member portal page that trusts a user query parameter."""
     if user is None:
         return RedirectResponse(url=f"{PATH}?user=1", status_code=302)
 
@@ -34,23 +54,23 @@ async def id_guessing_ui(user: int | None = Query(default=None, ge=1, le=20)):
     if profile:
         profile_html = f"""
         <div class="card">
-            <p><strong>User ID:</strong> {user}</p>
-            <p><strong>Name:</strong> {escape(profile['name'])}</p>
-            <p><strong>Club:</strong> {escape(profile['club'])}</p>
-            <p><strong>Note:</strong> {escape(profile['note'])}</p>
+            <p><strong>Member ID:</strong> {user}</p>
+            <p><strong>Handle:</strong> {escape(profile['handle'])}</p>
+            <p><strong>Crew:</strong> {escape(profile['crew'])}</p>
+            <p><strong>Intel:</strong> {escape(profile['intel'])}</p>
         </div>
         """
     else:
         profile_html = f"""
         <div class="card">
-            <p>No profile found for user {user}.</p>
+            <p>No member dossier found for ID {user}.</p>
         </div>
         """
 
     return f"""
     <html>
     <head>
-        <title>My Profile</title>
+        <title>BlackCipher Member Portal</title>
         <style>
             body {{ font-family: Arial, sans-serif; margin: 20px; }}
             .container {{ max-width: 860px; margin: 0 auto; }}
@@ -61,7 +81,8 @@ async def id_guessing_ui(user: int | None = Query(default=None, ge=1, le=20)):
     <body>
         <div class="container">
             {banner_html}
-            <h1>My Profile</h1>
+            <h1>BlackCipher Member Portal</h1>
+            <p class="meta">Internal gang dossiers indexed by member ID.</p>
             {profile_html}
         </div>
     </body>
